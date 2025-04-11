@@ -1,0 +1,33 @@
+{
+    "name": "mensagensanonimas",
+    "description": "Um bot anônimo para envio de mensagens no Telegram, construído em Python. 🚀",
+    "keywords": [
+        "telegram",
+        "pyrogram",
+        "python",
+        "bot",
+        "mensagens",
+        "anônimo"
+    ],
+    "repository": "https://github.com/Thepan808/mensagensanonimas",
+    "success_url": "/",
+    "logo": "https://via.placeholder.com/150",
+    "website": "https://github.com/Thepan808/mensagensanonimas",
+    "env": {
+        "API_ID": {
+            "description": "Obtenha este valor em https://my.telegram.org"
+        },
+        "API_HASH": {
+            "description": "Obtenha este valor em https://my.telegram.org"
+        },
+        "BOT_TOKEN": {
+            "description": "Obtenha o token do bot em @BotFather"
+        },
+        "CHANNEL_ID": {
+            "description": "ID do canal onde as mensagens anônimas serão postadas"
+        },
+        "CANAL_PUBLICO": {
+            "description": "Nome do canal público (opcional, sem @, ex: meu_canal)"
+        }
+    }
+}
