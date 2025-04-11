@@ -9,3 +9,6 @@ Para rodar via Render:
 - No Render, use este comando como build: `pip install -r requirements.txt`.
 - No comando de execução ou inicialização, use o seguinte comando: `gunicorn app:app & python3 bot.py`.
 - Adicione todas as variáveis de ambiente na seção de variáveis de ambiente.
+
+no final, troque as configuraçoes do .env e logo após hospedar, copie o link da implementação e vem aki
+https://dashboard.uptimerobot.com/
