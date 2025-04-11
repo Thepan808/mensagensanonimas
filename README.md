@@ -43,8 +43,8 @@ pkg install python`
 # Instale o Git:
 
 `bash
-pkg install git
-Instale o pip` # (gerenciador de pacotes do Python):
+pkg install git`
+# Instale o pip (gerenciador de pacotes do Python):
 
 `bash
 pkg install python-pip`
