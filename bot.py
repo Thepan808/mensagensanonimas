@@ -31,7 +31,7 @@ async def start_command(client, message):
     buttons = [
         [InlineKeyboardButton("ℹ️ Como usar", callback_data="help")],
         [InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/seu_usuario_aqui"),
-         InlineKeyboardButton("🛠️ Dev", url="https://t.me/seu_usuario_aqui")]
+         InlineKeyboardButton("🛠️ Dev", url="https://t.me/lndescritivel")]
     ]
     await message.reply(
         "🤖 Olá! Bem-vindo ao bot de mensagens anônimas!\n"
