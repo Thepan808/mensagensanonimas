@@ -1,5 +1,11 @@
 O mensagensanonimas é um bot escrito em Python que permite o envio de mensagens anônimas. Ele pode ser utilizado para criar interações anônimas entre usuários, geralmente em plataforma como o Telegram. O funcionamento exato vai depender do código do bot, mas a ideia principal é gerenciar mensagens de forma que o remetente não seja identificado.
 
+via Heroku
+
+### Deploy to Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Thepan808/mensagensanonimas)
+
 Para rodar via Render:
 
 #### Implantando este bot no Render. Basta seguir os passos abaixo:
