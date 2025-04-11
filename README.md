@@ -8,6 +8,10 @@ via Heroku
 
 Para rodar via Render:
 
+<a href="https://render.com/deploy?repo=https://github.com/Thepan808/mensagensanonimas">
+<img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" />
+</a>
+
 #### Implantando este bot no Render. Basta seguir os passos abaixo:
 
 - Faça um fork do repositório e importe-o no Render escolhendo a opção de serviços web.
