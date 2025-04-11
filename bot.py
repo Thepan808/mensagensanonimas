@@ -1,12 +1,21 @@
+import os
+import logging
+from dotenv import load_dotenv
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
+
 # Configurações do bot
-API_ID = "sua_api_id"
-API_HASH = "sua_api_hash"
-BOT_TOKEN = "seu_token_do_bot"
-CHANNEL_ID = -1001234567890  # Substitua pelo ID do canal onde as mensagens serão enviadas
-CANAL_PUBLICO = "seu_canal_publico"  # Substitua pelo @ ou nome público do canal (sem o @, ex: "mensagensanonimas")
+API_ID = os.getenv("API_ID")
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # Certifique-se de que o ID é um número inteiro
+CANAL_PUBLICO = os.getenv("CANAL_PUBLICO")
+
+# Inicializando o logger para registrar erros
+logging.basicConfig(level=logging.ERROR, filename="bot_errors.log", format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Inicializando o bot
 bot = Client(
@@ -45,6 +54,10 @@ async def callback_query_handler(client, callback_query):
 @bot.on_message(filters.private & ~filters.command(["start", "help"]))
 async def handle_anonymous_message(client, message):
     if message.text:
+        if len(message.text.strip()) < 5:  # Validação para mensagens curtas
+            await message.reply("❌ A mensagem deve conter pelo menos 5 caracteres.")
+            return
+        
         try:
             # Enviando a mensagem para o canal especificado
             sent_message = await client.send_message(
@@ -63,8 +76,8 @@ async def handle_anonymous_message(client, message):
             else:
                 await message.reply("✅ Sua mensagem anônima foi enviada para o canal de mensagens anônimas!")
         except Exception as e:
+            logging.error(f"Erro ao enviar mensagem: {e}")
             await message.reply("❌ Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde.")
-            print(f"Erro ao enviar mensagem: {e}")
     else:
         await message.reply("❌ Apenas mensagens de texto são suportadas no momento.")
 
