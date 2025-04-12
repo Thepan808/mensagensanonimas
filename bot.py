@@ -14,7 +14,7 @@ except ValueError:
     raise ValueError("O valor de API_ID deve ser um número inteiro válido.")
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # Certifique-se de que o ID é um número inteiro
+CHANNEL_ID = os.getenv("CHANNEL_ID")  # Agora aceita ID ou @username
 
 # Inicializando o logger para registrar erros
 logging.basicConfig(level=logging.ERROR, filename="bot_errors.log", format="%(asctime)s - %(levelname)s - %(message)s")
@@ -63,7 +63,7 @@ async def handle_anonymous_message(client, message):
         try:
             # Enviando a mensagem para o canal especificado
             await client.send_message(
-                chat_id=CHANNEL_ID,
+                chat_id=CHANNEL_ID if CHANNEL_ID.isdigit() else CHANNEL_ID.strip(),
                 text=f"📢 **Nova mensagem anônima:**\n\n{message.text}"
             )
 
