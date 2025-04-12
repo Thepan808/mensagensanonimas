@@ -9,18 +9,26 @@ load_dotenv()
 
 # Configurações do bot
 try:
-    API_ID = int(os.getenv("API_ID"))  # Certifique-se de que está como inteiro
-except ValueError:
-    raise ValueError("O valor de API_ID deve ser um número inteiro válido.")
-API_HASH = os.getenv("API_HASH")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # Certifique-se de que o ID é um número inteiro
-CANAL_PUBLICO = os.getenv("CANAL_PUBLICO")
+    API_ID = int(os.getenv("API_ID"))  # Converter API_ID para inteiro
+    API_HASH = os.getenv("API_HASH")
+    BOT_TOKEN = os.getenv("BOT_TOKEN")
+    CANAL_PUBLICO = os.getenv("CANAL_PUBLICO")  # Canal público em formato @nome_do_canal
 
-# Inicializando o logger para registrar erros
-logging.basicConfig(level=logging.ERROR, filename="bot_errors.log", format="%(asctime)s - %(levelname)s - %(message)s")
+    if not all([API_ID, API_HASH, BOT_TOKEN, CANAL_PUBLICO]):
+        raise ValueError("Certifique-se de que todas as variáveis de ambiente estão configuradas no arquivo .env.")
+    if not CANAL_PUBLICO.startswith("@"):
+        raise ValueError("O valor de CANAL_PUBLICO deve começar com '@'.")
+except Exception as e:
+    raise SystemExit(f"Erro na configuração do bot: {e}")
 
-# Inicializando o bot
+# Configuração do logger para registrar erros
+logging.basicConfig(
+    level=logging.ERROR,
+    filename="bot_errors.log",
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+# Inicialização do bot
 bot = Client(
     "anon_messages_bot",
     api_id=API_ID,
@@ -33,8 +41,10 @@ bot = Client(
 async def start_command(client, message):
     buttons = [
         [InlineKeyboardButton("ℹ️ Como usar", callback_data="help")],
-        [InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/laeleinfinitypromax"),
-         InlineKeyboardButton("🛠️ Dev", url="https://t.me/lndescritivel")]
+        [
+            InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/laeleinfinitypromax"),
+            InlineKeyboardButton("🛠️ Dev", url="https://t.me/lndescritivel")
+        ]
     ]
     await message.reply(
         "🤖 Olá! Bem-vindo ao bot de mensagens anônimas!\n"
@@ -59,22 +69,20 @@ async def callback_query_handler(client, callback_query):
 @bot.on_message(filters.private & ~filters.command(["start", "help"]))
 async def handle_anonymous_message(client, message):
     if message.text:
-        if len(message.text.strip()) < 5:  # Validação para mensagens curtas
-            await message.reply("❌ A mensagem deve conter pelo menos 5 caracteres.")
-            return
-        
         try:
-            # Enviando a mensagem para o canal especificado
+            # Enviando a mensagem para o canal público configurado no .env
             await client.send_message(
-                chat_id=CHANNEL_ID,
+                chat_id=CANAL_PUBLICO,
                 text=f"📢 **Nova mensagem anônima:**\n\n{message.text}"
             )
 
-            # Resposta simples de sucesso
+            # Confirmação de envio para o usuário
             await message.reply("✅ Sua mensagem anônima foi enviada com sucesso no canal!")
         except Exception as e:
             logging.error(f"Erro ao enviar mensagem: {e}")
-            await message.reply("❌ Ocorreu um erro ao enviar sua mensagem. Por favor, verifique as configurações do bot ou tente novamente mais tarde.")
+            await message.reply(
+                "❌ Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente mais tarde ou verifique as configurações do bot."
+            )
     else:
         await message.reply("❌ Apenas mensagens de texto são suportadas no momento.")
 
