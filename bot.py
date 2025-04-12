@@ -2,6 +2,7 @@ import os
 import logging
 from dotenv import load_dotenv
 from pyrogram import Client, filters
+from pyrogram.errors import RPCError
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Carregar variáveis de ambiente do arquivo .env
@@ -10,12 +11,12 @@ load_dotenv()
 # Configurações do bot
 try:
     API_ID = int(os.getenv("API_ID"))  # Certifique-se de que está como inteiro
-except ValueError:
-    raise ValueError("O valor de API_ID deve ser um número inteiro válido.")
+    CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # Certifique-se de que o ID é um número inteiro
+except ValueError as e:
+    raise ValueError("Verifique se API_ID e CHANNEL_ID são números inteiros válidos.") from e
+
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # Certifique-se de que o ID é um número inteiro
-CANAL_PUBLICO = os.getenv("CANAL_PUBLICO")
 
 # Inicializando o logger para registrar erros
 logging.basicConfig(level=logging.ERROR, filename="bot_errors.log", format="%(asctime)s - %(levelname)s - %(message)s")
@@ -56,27 +57,31 @@ async def callback_query_handler(client, callback_query):
 # Recebendo mensagens do usuário
 @bot.on_message(filters.private & ~filters.command(["start", "help"]))
 async def handle_anonymous_message(client, message):
-    if message.text:
-        if len(message.text.strip()) < 5:  # Validação para mensagens curtas
-            await message.reply("❌ A mensagem deve conter pelo menos 5 caracteres.")
-            return
-        
-        try:
-            # Enviando a mensagem para o canal especificado
-            await client.send_message(
-                chat_id=CHANNEL_ID,
-                text=f"📢 **Nova mensagem anônima:**\n\n{message.text}"
-            )
+    text = message.text.strip() if message.text else None
 
-            # Resposta simples de sucesso
-            await message.reply("✅ Sua mensagem anônima foi enviada com sucesso no canal!")
-        except Exception as e:
-            logging.error(f"Erro ao enviar mensagem: {e}")
-            await message.reply("❌ Ocorreu um erro ao enviar sua mensagem. Por favor, verifique as configurações do bot ou tente novamente mais tarde.")
-    else:
-        await message.reply("❌ Apenas mensagens de texto são suportadas no momento.")
+    if not text or len(text) < 5:  # Validação para mensagens curtas ou inválidas
+        await message.reply("❌ A mensagem deve conter pelo menos 5 caracteres.")
+        return
+
+    try:
+        # Enviando a mensagem para o canal especificado
+        await client.send_message(
+            chat_id=CHANNEL_ID,
+            text=f"📢 **Nova mensagem anônima:**\n\n{text}"
+        )
+        await message.reply("✅ Sua mensagem anônima foi enviada com sucesso no canal!")
+    except RPCError as e:
+        logging.error(f"Erro ao enviar mensagem (RPC): {e}")
+        await message.reply("❌ Ocorreu um erro no envio. Verifique as permissões do bot no canal.")
+    except Exception as e:
+        logging.error(f"Erro inesperado ao enviar mensagem: {e}")
+        await message.reply("❌ Ocorreu um erro inesperado. Contate o suporte ou tente novamente mais tarde.")
 
 # Iniciar o bot
 if __name__ == "__main__":
     print("Bot iniciado...")
-    bot.run()
+    try:
+        bot.run()
+    except Exception as e:
+        logging.critical(f"Erro crítico ao iniciar o bot: {e}")
+        print("Erro crítico ao iniciar o bot. Verifique os logs para mais informações.")
