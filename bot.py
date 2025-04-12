@@ -59,8 +59,8 @@ async def callback_query_handler(client, callback_query):
 async def handle_anonymous_message(client, message):
     text = message.text.strip() if message.text else None
 
-    if not text or len(text) < 5:  # Validação para mensagens curtas ou inválidas
-        await message.reply("❌ A mensagem deve conter pelo menos 5 caracteres.")
+    if not text:  # Apenas verifica se a mensagem não está vazia
+        await message.reply("❌ A mensagem não pode estar vazia.")
         return
 
     try:
