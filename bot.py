@@ -10,29 +10,29 @@ load_dotenv()
 
 # Configurações do bot
 try:
-    API_ID = int(os.getenv("API_ID"))  # Certifique-se de que está como inteiro
+    API_ID = int(os.getenv("API_ID"))
 except ValueError:
     raise ValueError("O valor de API_ID deve ser um número inteiro válido.")
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")  # Aceita ID ou @username
+CHANNEL_ID = os.getenv("CHANNEL_ID")
 
 # Configuração de logging detalhado
 logging.basicConfig(
-    level=logging.INFO,  # Alterar para DEBUG se necessário
+    level=logging.INFO,
     filename="bot.log",
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-# Inicializando o bot com configurações otimizadas
+# Inicializando o bot
 bot = Client(
     "anon_messages_bot",
     api_id=API_ID,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN,
-    workers=8,  # Aumentar número de workers para maior fluidez
-    sleep_threshold=10,  # Tempo limite antes de desconectar
-    in_memory=True  # Usa memória para maior rapidez em ambientes dinâmicos
+    workers=8,
+    sleep_threshold=10,
+    in_memory=True
 )
 
 # Função para envio com retentativa
@@ -43,7 +43,7 @@ async def enviar_mensagem_anonima(client, canal, texto):
             return True
         except Exception as e:
             logging.error(f"Tentativa {tentativa + 1} falhou: {e}")
-            await asyncio.sleep(2)  # Esperar antes de tentar novamente
+            await asyncio.sleep(2)
     return False
 
 # Comando /start
@@ -93,13 +93,10 @@ async def handle_anonymous_message(client, message):
     else:
         await message.reply("❌ Apenas mensagens de texto são suportadas no momento.")
 
-# Tratamento de erros globais
-@bot.on_errors()
-async def global_error_handler(client, update, error):
-    logging.error(f"Erro global: {error}")
-    # Adicionar lógica de retentativa ou notificação, se necessário
-
-# Iniciar o bot
+# Iniciar o bot com tratamento de exceções
 if __name__ == "__main__":
-    print("Bot iniciado...")
-    bot.run()
+    try:
+        print("Bot iniciado...")
+        bot.run()
+    except Exception as e:
+        logging.critical(f"Ocorreu um erro crítico: {e}")
