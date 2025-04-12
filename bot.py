@@ -47,6 +47,9 @@ async def start_command(client, message):
 async def callback_query_handler(client, callback_query):
     if callback_query.data == "help":
         await callback_query.message.edit(
+            "ℹ️ **Como usar o bot de mensagens anônimas:**\n\n"
+            "1. Escreva sua mensagem diretamente no chat com o bot.\n"
+            "2. O bot enviará sua mensagem anonimamente para o canal.\n\n"
             "🛸 **Farpas Área 52: treta controlada, zoeira autorizada!**\n\n"
             "🎭 Entre no clima da provocação divertida com estilo e criatividade. Aqui, as farpas voam como discos voadores — mas sempre com respeito.\n\n"
             "⚠️ Sem ofensas pessoais, sem baixaria. Brinque, provoque, mas lembre-se: até os ETs têm limite! 👽"
