@@ -63,24 +63,16 @@ async def handle_anonymous_message(client, message):
         
         try:
             # Enviando a mensagem para o canal especificado
-            sent_message = await client.send_message(
+            await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=f"📢 **Nova mensagem anônima:**\n\n{message.text}"
             )
 
-            # Gerando o link da mensagem (para canais públicos)
-            if CANAL_PUBLICO:
-                message_link = f"https://t.me/{CANAL_PUBLICO}/{sent_message.id}"
-                await message.reply(
-                    f"✅ Sua mensagem anônima foi enviada para o canal de mensagens anônimas!\n"
-                    f"🔗 [Clique aqui para visualizar sua mensagem no canal]({message_link}).",
-                    disable_web_page_preview=True
-                )
-            else:
-                await message.reply("✅ Sua mensagem anônima foi enviada para o canal de mensagens anônimas!")
+            # Resposta simples de sucesso
+            await message.reply("✅ Sua mensagem anônima foi enviada com sucesso no canal!")
         except Exception as e:
             logging.error(f"Erro ao enviar mensagem: {e}")
-            await message.reply("❌ Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde.")
+            await message.reply("❌ Ocorreu um erro ao enviar sua mensagem. Por favor, verifique as configurações do bot ou tente novamente mais tarde.")
     else:
         await message.reply("❌ Apenas mensagens de texto são suportadas no momento.")
 
