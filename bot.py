@@ -8,7 +8,10 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 load_dotenv()
 
 # Configurações do bot
-API_ID = os.getenv("API_ID")
+try:
+    API_ID = int(os.getenv("API_ID"))  # Certifique-se de que está como inteiro
+except ValueError:
+    raise ValueError("O valor de API_ID deve ser um número inteiro válido.")
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # Certifique-se de que o ID é um número inteiro
