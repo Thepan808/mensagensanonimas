@@ -33,7 +33,7 @@ bot = Client(
 async def start_command(client, message):
     buttons = [
         [InlineKeyboardButton("ℹ️ Como usar", callback_data="help")],
-        [InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/seu_usuario_aqui"),
+        [InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/laeleinfinitypromax"),
          InlineKeyboardButton("🛠️ Dev", url="https://t.me/lndescritivel")]
     ]
     await message.reply(
