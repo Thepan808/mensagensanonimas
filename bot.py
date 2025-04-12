@@ -17,8 +17,8 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # Certifique-se de que o ID é um número inteiro
 CANAL_PUBLICO = os.getenv("CANAL_PUBLICO")
 
-# Inicializando o logger para registrar erros
-logging.basicConfig(level=logging.ERROR, filename="bot_errors.log", format="%(asctime)s - %(levelname)s - %(message)s")
+# Inicializando o logger para registrar erros e informações
+logging.basicConfig(level=logging.INFO, filename="bot_logs.log", format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Inicializando o bot
 bot = Client(
@@ -62,11 +62,17 @@ async def handle_anonymous_message(client, message):
             return
         
         try:
+            # Log de quando a mensagem é recebida pelo bot
+            logging.info(f"Mensagem recebida do usuário {message.from_user.id}: {message.text.strip()}")
+
             # Enviando a mensagem para o canal especificado
             await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=f"📢 **Nova mensagem anônima:**\n\n{message.text}"
             )
+
+            # Log de quando a mensagem é enviada com sucesso para o canal
+            logging.info(f"Mensagem enviada para o canal {CHANNEL_ID}: {message.text.strip()}")
 
             # Resposta simples de sucesso
             await message.reply("✅ Sua mensagem anônima foi enviada com sucesso no canal!")
