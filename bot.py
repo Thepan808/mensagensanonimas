@@ -42,7 +42,7 @@ async def start_command(client, message):
     buttons = [
         [InlineKeyboardButton("ℹ️ Como usar", callback_data="help")],
         [
-            InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/laeleinfinitypromax"),
+            InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/mulheres_apaixonadas"),
             InlineKeyboardButton("🛠️ Dev", url="https://t.me/lndescritivel")
         ]
     ]
