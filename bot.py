@@ -1,5 +1,6 @@
 import os
 import logging
+import psycopg2
 from dotenv import load_dotenv
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -13,8 +14,9 @@ try:
     API_HASH = os.getenv("API_HASH")
     BOT_TOKEN = os.getenv("BOT_TOKEN")
     CANAL_PUBLICO = os.getenv("CANAL_PUBLICO")  # Canal público em formato @nome_do_canal
+    DATABASE_URL = os.getenv("DATABASE_URL")  # URL da conexão PostgreSQL
 
-    if not all([API_ID, API_HASH, BOT_TOKEN, CANAL_PUBLICO]):
+    if not all([API_ID, API_HASH, BOT_TOKEN, CANAL_PUBLICO, DATABASE_URL]):
         raise ValueError("Certifique-se de que todas as variáveis de ambiente estão configuradas no arquivo .env.")
     if not CANAL_PUBLICO.startswith("@"):
         raise ValueError("O valor de CANAL_PUBLICO deve começar com '@'.")
@@ -39,25 +41,74 @@ bot = Client(
 # Variável global para controlar o estado do bot
 bot_status = True  # True para ativo, False para inativo
 
+# Conexão com o banco de dados PostgreSQL
+try:
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            user_id BIGINT NOT NULL UNIQUE,
+            is_admin BOOLEAN DEFAULT FALSE
+        );
+    """)
+    conn.commit()
+except Exception as e:
+    raise SystemExit(f"Erro ao conectar ao banco de dados: {e}")
+
+# Função para verificar se um usuário é administrador
+def is_admin(user_id):
+    try:
+        cursor.execute("SELECT is_admin FROM users WHERE user_id = %s;", (user_id,))
+        result = cursor.fetchone()
+        return result is not None and result[0]
+    except Exception as e:
+        logging.error(f"Erro ao verificar administrador: {e}")
+        return False
+
 # Comando /on - Ativar o bot
-@bot.on_message(filters.command("on") & filters.user([737737727]))  # Substitua 123456789 pelo seu ID de usuário
+@bot.on_message(filters.command("on"))
 async def activate_bot(client, message):
     global bot_status
-    bot_status = True
-    await message.reply("✅ O bot foi ativado e está funcionando normalmente.")
+    if is_admin(message.from_user.id):
+        bot_status = True
+        await message.reply("✅ O bot foi ativado para todos os usuários.")
+    else:
+        await message.reply("⛔ Você não tem permissão para usar este comando.")
 
 # Comando /off - Desativar o bot
-@bot.on_message(filters.command("off") & filters.user([737737727]))  # Substitua 123456789 pelo seu ID de usuário
+@bot.on_message(filters.command("off"))
 async def deactivate_bot(client, message):
     global bot_status
-    bot_status = False
-    await message.reply(
-        "⛔ O bot foi desativado pelo proprietário.\n\n"
-        "Por favor, aguarde o aviso no canal para saber quando ele estará disponível novamente.",
-        reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton("🔗 Acompanhe no canal", url="https://t.me/mulheres_apaixonadas")]]  # Substitua pelo link do canal
+    if is_admin(message.from_user.id):
+        bot_status = False
+        await message.reply(
+            "⛔ O bot foi desativado para todos os usuários.\n\n"
+            "Por favor, aguarde o aviso no canal para saber quando ele estará disponível novamente.",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("🔗 Acompanhe no canal", url="https://t.me/mulheres_apaixonadas")]]  # Substitua pelo link do canal
+            )
         )
-    )
+    else:
+        await message.reply("⛔ Você não tem permissão para usar este comando.")
+
+# Comando para adicionar administradores (apenas usuários já administradores podem adicionar)
+@bot.on_message(filters.command("add_admin"))
+async def add_admin(client, message):
+    global bot_status
+    if is_admin(message.from_user.id):
+        try:
+            user_id = int(message.command[1])  # ID do usuário a ser adicionado
+            cursor.execute("INSERT INTO users (user_id, is_admin) VALUES (%s, TRUE) ON CONFLICT (user_id) DO NOTHING;", (user_id,))
+            conn.commit()
+            await message.reply(f"✅ Usuário {user_id} foi adicionado como administrador.")
+        except (IndexError, ValueError):
+            await message.reply("❌ Informe o ID do usuário para adicionar como administrador.")
+        except Exception as e:
+            logging.error(f"Erro ao adicionar administrador: {e}")
+            await message.reply("❌ Ocorreu um erro ao adicionar o administrador.")
+    else:
+        await message.reply("⛔ Você não tem permissão para usar este comando.")
 
 # Comando /start
 @bot.on_message(filters.command("start"))
@@ -89,7 +140,7 @@ async def callback_query_handler(client, callback_query):
         )
 
 # Recebendo mensagens do usuário
-@bot.on_message(filters.private & ~filters.command(["start", "help", "on", "off"]))
+@bot.on_message(filters.private & ~filters.command(["start", "help", "on", "off", "add_admin"]))
 async def handle_anonymous_message(client, message):
     global bot_status
     if not bot_status:
