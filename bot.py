@@ -39,29 +39,53 @@ bot = Client(
 # Variável global para controlar o estado do bot
 bot_status = True  # True para ativo, False para inativo
 
+# Lista para armazenar IDs de usuários registrados
+user_ids = set()
+
 # Comando /on - Ativar o bot
-@bot.on_message(filters.command("on") & filters.user([737737727]))  # Substitua 123456789 pelo seu ID de usuário
+@bot.on_message(filters.command("on") & filters.user([737737727]))  # Substitua pelo ID do administrador
 async def activate_bot(client, message):
     global bot_status
     bot_status = True
-    await message.reply("✅ O bot foi ativado e está funcionando normalmente.")
+
+    # Mensagem para todos os usuários registrados
+    for user_id in user_ids:
+        try:
+            await client.send_message(
+                chat_id=user_id,
+                text="✅ O bot foi ativado e está funcionando normalmente."
+            )
+        except Exception as e:
+            logging.error(f"Erro ao notificar o usuário {user_id}: {e}")
+
+    # Mensagem de confirmação para o administrador
+    await message.reply("✅ O bot foi ativado.")
 
 # Comando /off - Desativar o bot
-@bot.on_message(filters.command("off") & filters.user([737737727]))  # Substitua 123456789 pelo seu ID de usuário
+@bot.on_message(filters.command("off") & filters.user([737737727]))  # Substitua pelo ID do administrador
 async def deactivate_bot(client, message):
     global bot_status
     bot_status = False
-    await message.reply(
-        "⛔ O bot foi desativado pelo proprietário.\n\n"
-        "Por favor, aguarde o aviso no canal para saber quando ele estará disponível novamente.",
-        reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton("🔗 Acompanhe no canal", url="https://t.me/mulheres_apaixonadas")]]  # Substitua pelo link do canal
-        )
-    )
+
+    # Mensagem para todos os usuários registrados
+    for user_id in user_ids:
+        try:
+            await client.send_message(
+                chat_id=user_id,
+                text="⛔ O bot foi desativado. Por favor, aguardem até que ele volte a funcionar."
+            )
+        except Exception as e:
+            logging.error(f"Erro ao notificar o usuário {user_id}: {e}")
+
+    # Mensagem de confirmação para o administrador
+    await message.reply("⛔ O bot foi desativado.")
 
 # Comando /start
 @bot.on_message(filters.command("start"))
 async def start_command(client, message):
+    global user_ids
+    user_ids.add(message.from_user.id)  # Armazenar o ID do usuário
+
     buttons = [
         [InlineKeyboardButton("ℹ️ Como usar", callback_data="help")],
         [
