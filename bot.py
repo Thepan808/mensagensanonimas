@@ -41,6 +41,9 @@ bot = Client(
 # Variável global para controlar o estado do bot
 bot_status = True  # True para ativo, False para inativo
 
+# Seu ID de usuário como dono do bot
+OWNER_ID = 737737727  # Substitua pelo seu ID
+
 # Conexão com o banco de dados PostgreSQL
 try:
     conn = psycopg2.connect(DATABASE_URL)
@@ -59,6 +62,9 @@ except Exception as e:
 # Função para verificar se um usuário é administrador
 def is_admin(user_id):
     try:
+        # O dono do bot é sempre considerado administrador
+        if user_id == OWNER_ID:
+            return True
         cursor.execute("SELECT is_admin FROM users WHERE user_id = %s;", (user_id,))
         result = cursor.fetchone()
         return result is not None and result[0]
@@ -92,18 +98,26 @@ async def deactivate_bot(client, message):
     else:
         await message.reply("⛔ Você não tem permissão para usar este comando.")
 
-# Comando para adicionar administradores (apenas usuários já administradores podem adicionar)
+# Comando para adicionar administradores (apenas usuários já administradores ou o dono podem adicionar)
 @bot.on_message(filters.command("add_admin"))
 async def add_admin(client, message):
     global bot_status
+    try:
+        # Tenta obter o ID do usuário a ser adicionado
+        user_id_to_add = int(message.command[1])  # ID do usuário a ser adicionado
+    except (IndexError, ValueError):
+        await message.reply("❌ Informe o ID do usuário para adicionar como administrador.")
+        return
+
+    # Verifica se o remetente é o dono ou um administrador registrado
     if is_admin(message.from_user.id):
         try:
-            user_id = int(message.command[1])  # ID do usuário a ser adicionado
-            cursor.execute("INSERT INTO users (user_id, is_admin) VALUES (%s, TRUE) ON CONFLICT (user_id) DO NOTHING;", (user_id,))
+            cursor.execute(
+                "INSERT INTO users (user_id, is_admin) VALUES (%s, TRUE) ON CONFLICT (user_id) DO NOTHING;",
+                (user_id_to_add,)
+            )
             conn.commit()
-            await message.reply(f"✅ Usuário {user_id} foi adicionado como administrador.")
-        except (IndexError, ValueError):
-            await message.reply("❌ Informe o ID do usuário para adicionar como administrador.")
+            await message.reply(f"✅ Usuário {user_id_to_add} foi adicionado como administrador.")
         except Exception as e:
             logging.error(f"Erro ao adicionar administrador: {e}")
             await message.reply("❌ Ocorreu um erro ao adicionar o administrador.")
