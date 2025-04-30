@@ -36,6 +36,29 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
+# Variável global para controlar o estado do bot
+bot_status = True  # True para ativo, False para inativo
+
+# Comando /on - Ativar o bot
+@bot.on_message(filters.command("on") & filters.user([737737727]))  # Substitua 123456789 pelo seu ID de usuário
+async def activate_bot(client, message):
+    global bot_status
+    bot_status = True
+    await message.reply("✅ O bot foi ativado e está funcionando normalmente.")
+
+# Comando /off - Desativar o bot
+@bot.on_message(filters.command("off") & filters.user([737737727]))  # Substitua 123456789 pelo seu ID de usuário
+async def deactivate_bot(client, message):
+    global bot_status
+    bot_status = False
+    await message.reply(
+        "⛔ O bot foi desativado pelo proprietário.\n\n"
+        "Por favor, aguarde o aviso no canal para saber quando ele estará disponível novamente.",
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🔗 Acompanhe no canal", url="https://t.me/mulheres_apaixonadas")]]  # Substitua pelo link do canal
+        )
+    )
+
 # Comando /start
 @bot.on_message(filters.command("start"))
 async def start_command(client, message):
@@ -66,8 +89,19 @@ async def callback_query_handler(client, callback_query):
         )
 
 # Recebendo mensagens do usuário
-@bot.on_message(filters.private & ~filters.command(["start", "help"]))
+@bot.on_message(filters.private & ~filters.command(["start", "help", "on", "off"]))
 async def handle_anonymous_message(client, message):
+    global bot_status
+    if not bot_status:
+        await message.reply(
+            "⚠️ O bot está indisponível no momento.\n"
+            "Por favor, aguarde o aviso no canal para saber quando ele estará disponível novamente.",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("🔗 Acompanhe no canal", url="https://t.me/mulheres_apaixonadas")]]  # Substitua pelo link do canal
+            )
+        )
+        return
+
     if message.text:
         try:
             # Enviando a mensagem para o canal público configurado no .env
