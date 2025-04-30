@@ -98,47 +98,34 @@ async def deactivate_bot(client, message):
     else:
         await message.reply("⛔ Você não tem permissão para usar este comando.")
 
-# Comando para adicionar administradores (apenas usuários já administradores ou o dono podem adicionar)
-@bot.on_message(filters.command("add_admin"))
-async def add_admin(client, message):
-    global bot_status
-    try:
-        # Tenta obter o ID do usuário a ser adicionado
-        user_id_to_add = int(message.command[1])  # ID do usuário a ser adicionado
-    except (IndexError, ValueError):
-        await message.reply("❌ Informe o ID do usuário para adicionar como administrador.")
-        return
-
-    # Verifica se o remetente é o dono ou um administrador registrado
-    if is_admin(message.from_user.id):
-        try:
-            cursor.execute(
-                "INSERT INTO users (user_id, is_admin) VALUES (%s, TRUE) ON CONFLICT (user_id) DO NOTHING;",
-                (user_id_to_add,)
-            )
-            conn.commit()
-            await message.reply(f"✅ Usuário {user_id_to_add} foi adicionado como administrador.")
-        except Exception as e:
-            logging.error(f"Erro ao adicionar administrador: {e}")
-            await message.reply("❌ Ocorreu um erro ao adicionar o administrador.")
-    else:
-        await message.reply("⛔ Você não tem permissão para usar este comando.")
-
 # Comando /start
 @bot.on_message(filters.command("start"))
 async def start_command(client, message):
-    buttons = [
-        [InlineKeyboardButton("ℹ️ Como usar", callback_data="help")],
-        [
-            InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/mulheres_apaixonadas"),
-            InlineKeyboardButton("🛠️ Dev", url="https://t.me/lndescritivel")
+    user_id = message.from_user.id
+    try:
+        # Registrar o ID do usuário na base de dados
+        cursor.execute(
+            "INSERT INTO users (user_id) VALUES (%s) ON CONFLICT (user_id) DO NOTHING;",
+            (user_id,)
+        )
+        conn.commit()
+
+        # Mensagem de boas-vindas e botões
+        buttons = [
+            [InlineKeyboardButton("ℹ️ Como usar", callback_data="help")],
+            [
+                InlineKeyboardButton("👨‍💻 Criador", url="https://t.me/mulheres_apaixonadas"),
+                InlineKeyboardButton("🛠️ Dev", url="https://t.me/lndescritivel")
+            ]
         ]
-    ]
-    await message.reply(
-        "🤖 Olá! Bem-vindo ao bot de mensagens anônimas!\n"
-        "Envie qualquer mensagem aqui e ela será enviada anonimamente para o canal configurado.",
-        reply_markup=InlineKeyboardMarkup(buttons)
-    )
+        await message.reply(
+            "🤖 Olá! Bem-vindo ao bot de mensagens anônimas!\n"
+            "Envie qualquer mensagem aqui e ela será enviada anonimamente para o canal configurado.",
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+    except Exception as e:
+        logging.error(f"Erro ao registrar usuário no banco de dados: {e}")
+        await message.reply("❌ Ocorreu um erro ao registrar seu acesso. Tente novamente mais tarde.")
 
 # Callback dos botões
 @bot.on_callback_query()
