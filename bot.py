@@ -79,6 +79,15 @@ async def activate_bot(client, message):
     if is_admin(message.from_user.id):
         bot_status = True
         await message.reply("✅ O bot foi ativado para todos os usuários.")
+        
+        try:
+            # Enviar uma mensagem no canal configurado informando que o bot está ativo
+            await client.send_message(
+                chat_id=CANAL_PUBLICO,
+                text="✅ **O bot está agora ativo!**\n\nEnvie suas mensagens anônimas diretamente para este canal."
+            )
+        except Exception as e:
+            logging.error(f"Erro ao enviar mensagem de ativação para o canal: {e}")
     else:
         await message.reply("⛔ Você não tem permissão para usar este comando.")
 
@@ -92,9 +101,18 @@ async def deactivate_bot(client, message):
             "⛔ O bot foi desativado para todos os usuários.\n\n"
             "Por favor, aguarde o aviso no canal para saber quando ele estará disponível novamente.",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("🔗 Acompanhe no canal", url="https://t.me/mulheres_apaixonadas")]]  # Substitua pelo link do canal
+                [[InlineKeyboardButton("🔗 Acompanhe no canal", url=f"https://t.me/{CANAL_PUBLICO[1:]}")]]
             )
         )
+
+        try:
+            # Enviar uma mensagem ao canal configurado informando que o bot está inativo
+            await client.send_message(
+                chat_id=CANAL_PUBLICO,
+                text="⛔ **O bot foi desativado.**\n\nPor favor, aguarde para novas atualizações."
+            )
+        except Exception as e:
+            logging.error(f"Erro ao enviar mensagem de desativação para o canal: {e}")
     else:
         await message.reply("⛔ Você não tem permissão para usar este comando.")
 
@@ -149,7 +167,7 @@ async def handle_anonymous_message(client, message):
             "⚠️ O bot está indisponível no momento.\n"
             "Por favor, aguarde o aviso no canal para saber quando ele estará disponível novamente.",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("🔗 Acompanhe no canal", url="https://t.me/mulheres_apaixonadas")]]  # Substitua pelo link do canal
+                [[InlineKeyboardButton("🔗 Acompanhe no canal", url=f"https://t.me/{CANAL_PUBLICO[1:]}")]]
             )
         )
         return
