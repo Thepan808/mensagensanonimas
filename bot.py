@@ -39,7 +39,7 @@ bot = Client(
 )
 
 # Variável global para controlar o estado do bot
-bot_status = True  # True para ativo, False para inativo
+bot_status = False  # True para ativo, False para inativo
 
 # Seu ID de usuário como dono do bot
 OWNER_ID = 737737727  # Substitua pelo seu ID
